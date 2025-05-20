@@ -8,6 +8,8 @@ import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
+import { GraphComponent } from './graph/graph.component';
+import { GraphModule } from './graph/graph.module'; // 导入图形模块
 
 @NgModule({
   declarations: [
@@ -21,8 +23,9 @@ import { RegisterComponent } from './register/register.component';
     HttpClientModule,
     LoginComponent,
     RegisterComponent,
-    ReactiveFormsModule  
-
+    ReactiveFormsModule,
+    GraphComponent,
+    GraphModule 
   ],
   providers: [],
   bootstrap: [AppComponent]
