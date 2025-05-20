@@ -24,7 +24,7 @@ export class PrimService {
       // 确保 source 和 target 是字符串
       const source = typeof edge.source === 'string' ? edge.source : (edge.source as any).id;
       const target = typeof edge.target === 'string' ? edge.target : (edge.target as any).id;
-      
+
       console.log(`Processing edge: ${source} - ${target} (${edge.weight})`);
       const sourceNeighbors = graph.get(source) || [];
       sourceNeighbors.push({ neighbor: target, weight: edge.weight });
@@ -38,6 +38,7 @@ export class PrimService {
 
     // 初始化
     const visited = new Set<string>([startNode]);
+    const visitedEdge = new Set<string>([]);
     const mst: { source: string, target: string, weight: number }[] = [];
 
     // 记录初始状态
@@ -50,15 +51,16 @@ export class PrimService {
         y: node.y
       })),
       edges: edges.map(edge => ({
+        id: edge.id,
         source: edge.source,
         target: edge.target,
-        color: edge.color || '#999'
+        color: '#999'
       }))
     });
 
     // Prim算法主循环
     while (visited.size < nodes.length) {
-      let minEdge: { source: string, target: string, weight: number } | null = null;
+      let minEdge: {id:string; source: string, target: string, weight: number } | null = null;
 
       // 查找连接已访问和未访问节点的最小权重边
       visited.forEach(node => {
@@ -68,6 +70,7 @@ export class PrimService {
             console.log(`  Candidate edge: ${node} - ${neighbor} (${weight})`);
             if (!minEdge || weight < minEdge.weight) {
               minEdge = {
+                id: `${node}-${neighbor}`,
                 source: node,
                 target: neighbor,
                 weight: weight
@@ -87,6 +90,8 @@ export class PrimService {
       mst.push(minEdge);
       const edge = minEdge as { source: string, target: string, weight: number };
       visited.add(edge.target);
+      visitedEdge.add(edge.source + '-' + edge.target);
+      visitedEdge.add(edge.target + '-' + edge.source);
 
       // 记录这一步
       const nodeColors = nodes.map(node => ({
@@ -97,18 +102,31 @@ export class PrimService {
         x: node.x,
         y: node.y
       }));
+      const edgeColors = edges.map(e => {
+        // 找到对应的边ID
+        const sourceId = typeof e.source === 'object' ? (e.source as any).id : e.source;
+        const targetId = typeof e.target === 'object' ? (e.target as any).id : e.target;
+        const edgeId = `${sourceId}-${targetId}`;
+        const reverseEdgeId = `${targetId}-${sourceId}`;
+        console.log('Edge ID121313:', e.id === edgeId);
 
-      const edgeColors = edges.map(edge => {
-        // 确保 source 和 target 是字符串
-        const source = typeof edge.source === 'string' ? edge.source : (edge.source as any).id;
-        const target = typeof edge.target === 'string' ? edge.target : (edge.target as any).id;
+        // 判断当前边是否在 MST 中
+        const isInMST = mst.some(mstEdge =>
+          (mstEdge.source === sourceId && mstEdge.target === targetId) ||
+          (mstEdge.source === targetId && mstEdge.target === sourceId)
+        );
+
+        // 根据当前边是否在 MST 中来设置颜色
+        const color = isInMST ? ((minEdge?.id === edgeId || reverseEdgeId === minEdge?.id) ? '#d62728' : '#ff7f0e') : '#999';
 
         return {
-          source: edge.source,
-          target: edge.target,
-          color: '#999'
+          id: e.id,
+          source: e.source,
+          target: e.target,
+          color: color
         };
       });
+
 
       // 在这里，我们已经确认 minEdge 不为 null，所以可以安全地访问其属性
       const safeMinEdge = minEdge as { source: string, target: string, weight: number };
@@ -132,13 +150,20 @@ export class PrimService {
 
     const finalEdgeColors = edges.map(edge => {
       // 确保 source 和 target 是字符串
-      const source = typeof edge.source === 'string' ? edge.source : (edge.source as any).id;
-      const target = typeof edge.target === 'string' ? edge.target : (edge.target as any).id;
-      
+      const sourceId = typeof edge.source === 'string' ? edge.source : (edge.source as any).id;
+      const targetId = typeof edge.target === 'string' ? edge.target : (edge.target as any).id;
+
+      // 检查边是否在 MST 中
+      const isInMST = mst.some(mstEdge =>
+        (mstEdge.source === sourceId && mstEdge.target === targetId) ||
+        (mstEdge.source === targetId && mstEdge.target === sourceId)
+      );
+
       return {
+        id: edge.id,
         source: edge.source,
         target: edge.target,
-        color: '#999'
+        color: isInMST ? '#ff7f0e' : '#999' // MST 中的边为橙色，其他为灰色
       };
     });
 
@@ -150,7 +175,7 @@ export class PrimService {
 
     const endTime = performance.now();
     console.log(`Algorithm completed with ${steps.length} steps in ${Math.round(endTime - startTime)}ms`);
-    
+
     return {
       steps,
       executionTime: Math.round(endTime - startTime)

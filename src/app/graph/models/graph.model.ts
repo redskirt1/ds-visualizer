@@ -8,6 +8,7 @@ export interface Node {
 }
 
 export interface Edge {
+  id: string;
   source: string;
   target: string;
   weight: number;
@@ -23,5 +24,5 @@ export interface Graph {
 export interface AlgorithmStep {
   description: string;
   nodes: { id: string; color: string; x?: number; y?: number; }[];
-  edges: { source: string; target: string; color: string; }[];
+  edges: { id: string; source: string; target: string; color: string; }[];
 }

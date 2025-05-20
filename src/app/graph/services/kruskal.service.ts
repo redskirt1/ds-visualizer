@@ -12,6 +12,7 @@ export class KruskalService {
 
     // 创建边列表并按权重排序
     const edgeList = edges.map(edge => ({
+      id: edge.id,
       source: edge.source,
       target: edge.target,
       weight: edge.weight
@@ -58,6 +59,11 @@ export class KruskalService {
     nodes.forEach(node => {
       nodeColors.set(node.id, '#69b3a2'); // 默认颜色
     });
+    // 边颜色管理
+    const edgeColors = new Map<string, string>();
+    edges.forEach(edge => {
+      edgeColors.set(edge.id, '#999'); // 默认颜色
+    });
 
     // 记录初始状态
     steps.push({
@@ -69,6 +75,7 @@ export class KruskalService {
         y: node.y
       })),
       edges: edges.map(edge => ({
+        id: edge.id,
         source: edge.source,
         target: edge.target,
         color: '#999'
@@ -91,6 +98,7 @@ export class KruskalService {
         y: node.y
       })),
       edges: edges.map(edge => ({
+        id: edge.id,
         source: edge.source,
         target: edge.target,
         color: '#999'
@@ -118,11 +126,13 @@ export class KruskalService {
           const eTargetId = typeof e.target === 'string' ? e.target : (e.target as any).id;
 
           return {
+            id: e.id,
             source: e.source,
             target: e.target,
-            color: (eSourceId === sourceId && eTargetId === targetId) || 
-                  (eTargetId === sourceId && eSourceId === targetId) ? '#d62728' : '#999'
-          };
+            color: (eSourceId === sourceId && eTargetId === targetId) ||
+                (eTargetId === sourceId && eSourceId === targetId) ? '#d62728' :
+                edgeColors.get(e.id) || '#999'
+            };
         })
       });
 
@@ -136,23 +146,25 @@ export class KruskalService {
           target: targetId,
           weight: edge.weight
         });
+        edgeColors.set(edge.id, '#ff7f0e'); // 设置边颜色为红色
+        console.log('添加边到MST:', edgeColors);
 
         // 合并集合前记录目标根节点，因为合并后会改变
         const oldRootTarget = rootTarget;
-        
+
         // 合并集合
         union(sourceId, targetId);
 
         // 获取合并后的根节点
         const newRoot = find(sourceId);
-        
+
         // 更新节点颜色 - 对两个连通分量的所有节点进行染色
         nodes.forEach(node => {
           const nodeRoot = find(node.id);
           if (nodeRoot === newRoot) {
             const hash = Array.from(nodeRoot).reduce((h, c) => (h << 5) - h + c.charCodeAt(0), 0);
             const hue = Math.abs(hash) % 360;
-          nodeColors.set(node.id, `hsl(${hue}, 70%, 60%)`);
+            nodeColors.set(node.id, `hsl(${hue}, 70%, 60%)`);
           }
         });
 
@@ -160,7 +172,7 @@ export class KruskalService {
         steps.push({
           description: `添加边 ${sourceId} - ${targetId} 到MST，合并集合`,
           nodes: nodes.map(node => ({
-              id: node.id,
+            id: node.id,
             color: nodeColors.get(node.id) || '#69b3a2',
             x: node.x,
             y: node.y
@@ -170,16 +182,18 @@ export class KruskalService {
             const eTargetId = typeof e.target === 'string' ? e.target : (e.target as any).id;
 
             return {
+              id: e.id,
               source: e.source,
               target: e.target,
-              color: (eSourceId === sourceId && eTargetId === targetId) || 
-                    (eTargetId === sourceId && eSourceId === targetId) ? '#d62728' : '#999'
+              color: (eSourceId === sourceId && eTargetId === targetId) ||
+                (eTargetId === sourceId && eSourceId === targetId) ? '#d62728' :
+                edgeColors.get(e.id) || '#999'
             };
           })
         });
       } else {
         // 记录跳过的边
-    steps.push({
+        steps.push({
           description: `跳过边 ${sourceId} - ${targetId}，因为它会形成环`,
           nodes: nodes.map(node => ({
             id: node.id,
@@ -190,15 +204,16 @@ export class KruskalService {
           edges: edges.map(e => {
             const eSourceId = typeof e.source === 'string' ? e.source : (e.source as any).id;
             const eTargetId = typeof e.target === 'string' ? e.target : (e.target as any).id;
-    return {
+            return {
+              id: e.id,
               source: e.source,
               target: e.target,
-              color: (eSourceId === sourceId && eTargetId === targetId) || 
-                    (eTargetId === sourceId && eSourceId === targetId) ? '#aaaaaa' : '#999'
-    };
+              color: (eSourceId === sourceId && eTargetId === targetId) ||
+                (eTargetId === sourceId && eSourceId === targetId) ? '#aaaaaa' : '#999'
+            };
           })
         });
-  }
+      }
 
       // 检查是否所有节点都已连通
       const firstRoot = find(nodes[0].id);
@@ -207,7 +222,7 @@ export class KruskalService {
       // 如果MST已经有n-1条边或所有节点都已连通，则完成
       if (mst.length === nodes.length - 1 || allConnected) {
         break;
-}
+      }
     }
 
     // 记录最终结果
@@ -232,17 +247,18 @@ export class KruskalService {
       edges: edges.map(edge => {
         const eSourceId = typeof edge.source === 'string' ? edge.source : (edge.source as any).id;
         const eTargetId = typeof edge.target === 'string' ? edge.target : (edge.target as any).id;
-        
+
         // 检查边是否在MST中
         const inMST = mst.some(mstEdge => {
           const mstSourceId = typeof mstEdge.source === 'string' ? mstEdge.source : (mstEdge.source as any).id;
           const mstTargetId = typeof mstEdge.target === 'string' ? mstEdge.target : (mstEdge.target as any).id;
-          
-          return (eSourceId === mstSourceId && eTargetId === mstTargetId) || 
-                 (eTargetId === mstSourceId && eSourceId === mstTargetId);
+
+          return (eSourceId === mstSourceId && eTargetId === mstTargetId) ||
+            (eTargetId === mstSourceId && eSourceId === mstTargetId);
         });
-        
+
         return {
+          id: edge.id,
           source: edge.source,
           target: edge.target,
           color: inMST ? '#ff7f0e' : '#999'

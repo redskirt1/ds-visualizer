@@ -56,6 +56,7 @@ export class DijkstraService {
         y: node.y
       })),
       edges: edges.map(edge => ({
+        id: edge.id,
         source: edge.source,
         target: edge.target,
         color: '#999'
@@ -124,6 +125,7 @@ export class DijkstraService {
           }
         }
     return {
+          id: edge.id,
           source: edge.source,
           target: edge.target,
           color: color
@@ -178,6 +180,7 @@ export class DijkstraService {
           }
         }
     return {
+          id: edge.id,  
           source: edge.source,
           target: edge.target,
           color: color
@@ -251,6 +254,7 @@ export class DijkstraService {
                 }
               }
               return {
+                id: edge.id,
                 source: edge.source,
                 target: edge.target,
                 color: color
@@ -293,6 +297,7 @@ export class DijkstraService {
           y: node.y
         })),
         edges: edges.map(edge => ({
+          id: edge.id,
           source: edge.source,
           target: edge.target,
           color: '#999'
@@ -335,6 +340,7 @@ export class DijkstraService {
           }
         }
         return {
+          id: edge.id,
           source: edge.source,
           target: edge.target,
           color: color

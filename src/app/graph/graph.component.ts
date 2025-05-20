@@ -75,8 +75,8 @@ export class GraphComponent implements OnInit {
 
     // 使用渲染服务初始化图形
     this.svg = this.graphRenderer.initializeGraph(
-      this.graphContainer.nativeElement, 
-      this.width, 
+      this.graphContainer.nativeElement,
+      this.width,
       this.height
     );
   }
@@ -97,6 +97,7 @@ export class GraphComponent implements OnInit {
         if (Math.random() < this.edgeDensity) {
           const weight = Math.floor(Math.random() * 10) + 1;
           this.edges.push({
+            id: `${this.nodes[i].id}-${this.nodes[j].id}`, // 使用 "sourceId-targetId" 格式
             source: this.nodes[i].id,
             target: this.nodes[j].id,
             weight: weight,
@@ -133,7 +134,7 @@ export class GraphComponent implements OnInit {
   renderGraph(): void {
     // 使用渲染服务渲染图形
     this.graphRenderer.renderGraph(this.svg, this.nodes, this.edges, this.simulation);
-    
+
     // 设置模拟的tick事件
     if (this.simulation) {
       this.simulation.on('tick', () => {
@@ -141,7 +142,7 @@ export class GraphComponent implements OnInit {
         const nodes = this.svg.selectAll('.nodes circle');
         const nodeLabels = this.svg.selectAll('.node-labels text');
         const edgeWeights = this.svg.selectAll('.edge-weights text');
-        
+
         this.graphRenderer.updatePositions(links, nodes, nodeLabels, edgeWeights);
       });
     }
@@ -149,7 +150,7 @@ export class GraphComponent implements OnInit {
 
   applyForceLayout(): void {
     console.log('Applying force layout');
-    
+
     if (this.simulation) {
       this.simulation.stop();
     }
@@ -161,9 +162,9 @@ export class GraphComponent implements OnInit {
 
     // 使用渲染服务应用力导向布局
     this.simulation = this.graphRenderer.createForceLayout(
-      this.nodes, 
-      this.edges, 
-      this.width, 
+      this.nodes,
+      this.edges,
+      this.width,
       this.height
     );
 
@@ -176,15 +177,15 @@ export class GraphComponent implements OnInit {
   // 算法调用
   runDijkstra(): void {
     if (!this.startNode || !this.endNode) return;
-    
+
     this.currentAlgorithm = 'Dijkstra最短路径算法';
     const result = this.dijkstraService.runDijkstra(
-      this.nodes, 
-      this.edges, 
-      this.startNode, 
+      this.nodes,
+      this.edges,
+      this.startNode,
       this.endNode
     );
-    
+
     this.algorithmSteps = result.steps;
     this.executionTime = result.executionTime;
     this.currentStep = 0;
@@ -194,13 +195,13 @@ export class GraphComponent implements OnInit {
   runPrim(): void {
     this.currentAlgorithm = 'Prim最小生成树算法';
     const startNode = this.startNode || this.nodes[0].id;
-    
+
     const result = this.primService.runPrim(
-      this.nodes, 
-      this.edges, 
+      this.nodes,
+      this.edges,
       startNode
     );
-    
+
     this.algorithmSteps = result.steps;
     this.executionTime = result.executionTime;
     this.currentStep = 0;
@@ -209,12 +210,12 @@ export class GraphComponent implements OnInit {
 
   runKruskal(): void {
     this.currentAlgorithm = 'Kruskal最小生成树算法';
-    
+
     const result = this.kruskalService.runKruskal(
-      this.nodes, 
+      this.nodes,
       this.edges
     );
-    
+
     this.algorithmSteps = result.steps;
     this.executionTime = result.executionTime;
     this.currentStep = 0;
@@ -233,7 +234,7 @@ export class GraphComponent implements OnInit {
     step.nodes.forEach(node => {
       nodeMap.set(node.id, node);
     });
-    
+
     // 更新节点颜色，但保持位置不变
     this.svg.selectAll('circle')
       .data(this.nodes)
@@ -246,8 +247,13 @@ export class GraphComponent implements OnInit {
     const edgeMap = new Map();
     step.edges.forEach(edge => {
       // 创建边的唯一标识符
-      const edgeId = `${edge.source}-${edge.target}`;
-      const reverseEdgeId = `${edge.target}-${edge.source}`;
+      // 处理 source 和 target 可能是对象的情况
+      const sourceId = typeof edge.source === 'object' ? (edge.source as any).id : edge.source;
+      const targetId = typeof edge.target === 'object' ? (edge.target as any).id : edge.target;
+
+      // 创建边的唯一标识符
+      const edgeId = `${sourceId}-${targetId}`;
+      const reverseEdgeId = `${targetId}-${sourceId}`;
       edgeMap.set(edgeId, edge);
       edgeMap.set(reverseEdgeId, edge); // 处理无向图
     });
@@ -256,8 +262,15 @@ export class GraphComponent implements OnInit {
     this.svg.selectAll('line')
       .data(this.edges)
       .attr('stroke', (d: Edge) => {
-        const edgeId = `${d.source}-${d.target}`;
+        // 处理 source 和 target 可能是对象的情况
+        const sourceId = typeof d.source === 'object' ? (d.source as any).id : d.source;
+        const targetId = typeof d.target === 'object' ? (d.target as any).id : d.target;
+
+        const edgeId = `${sourceId}-${targetId}`;
+        console.log('Edge ID:', edgeId);
+        console.log('edgeMap :', edgeMap);
         const stepEdge = edgeMap.get(edgeId);
+        console.log('Step Edge:', stepEdge);
         return stepEdge ? stepEdge.color : d.color;
       });
   }

@@ -35,7 +35,7 @@ export class GraphRendererService {
       .data(edges)
       .enter()
       .append('line')
-      .attr('stroke', (d: Edge) => '#999')  // 确保使用边的颜色
+      .attr('stroke', (d: Edge) => d.color || '#999')  // 确保使用边的颜色
       .attr('stroke-width', 2);
     // 创建节点
     const nodeElements = svg.append('g')
@@ -136,5 +136,22 @@ export class GraphRendererService {
     if (simulation && !event.active) simulation.alphaTarget(0);
     event.subject.fx = null;
     event.subject.fy = null;
+  }
+
+    /**
+   * 染色指定的边
+   * @param svg SVG元素
+   * @param edgeId 要染色的边的ID
+   * @param color 颜色值
+   */
+  colorEdge(svg: any, edgeId: string, color: string): void {
+    svg.select('.links')
+      .selectAll('line')
+      .filter((d: Edge) => {
+        // 根据边的唯一标识符过滤
+        return d.id === edgeId;
+      })
+      .attr('stroke', color)
+      .attr('stroke-width', 3); // 可选：增加边的宽度以突出显示
   }
 }
