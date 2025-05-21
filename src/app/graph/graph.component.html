@@ -1,1 +1,68 @@
-<p>graph works!</p>
+<div class="graph-container">
+  <div class="main-content">
+    <div class="controls">
+      <div class="control-group">
+        <h3>图生成</h3>
+      <div class="control-item">
+          <label for="nodeCount">节点数量:</label>
+          <input type="number" id="nodeCount" [(ngModel)]="nodeCount" min="2" max="26">
+      </div>
+      <div class="control-item">
+          <label for="edgeDensity">边密度:</label>
+          <input type="range" id="edgeDensity" [(ngModel)]="edgeDensity" min="0.1" max="1" step="0.1">
+          <span>{{edgeDensity}}</span>
+      </div>
+        <div class="control-item">
+          <button (click)="createRandomGraph()">生成随机图</button>
+          <button (click)="clearGraph()">清除图</button>
+      </div>
+      </div>
+      <div class="control-group">
+        <h3>算法</h3>
+      <div class="control-item">
+          <label for="startNode">起点:</label>
+          <select id="startNode" [(ngModel)]="startNode">
+            <option *ngFor="let node of nodes" [value]="node.id">{{node.id}}</option>
+          </select>
+      </div>
+      <div class="control-item">
+          <label for="endNode">终点:</label>
+          <select id="endNode" [(ngModel)]="endNode">
+            <option *ngFor="let node of nodes" [value]="node.id">{{node.id}}</option>
+          </select>
+      </div>
+        <div class="control-item">
+          <button (click)="runDijkstra()">Dijkstra最短路径</button>
+          <button (click)="runPrim()">Prim最小生成树</button>
+          <button (click)="runKruskal()">Kruskal最小生成树</button>
+    </div>
+  </div>
+</div>
+
+    <div #graphContainer class="graph"></div>
+  </div>
+
+  <!-- 算法步骤固定在下方 -->
+  <div class="algorithm-steps" *ngIf="algorithmSteps.length > 0">
+    <div class="algorithm-info">
+      <div>{{currentAlgorithm}}</div>
+      <div>执行时间: {{executionTime}}ms</div>
+      <div>步骤: {{currentStep + 1}} / {{algorithmSteps.length}}</div>
+    </div>
+    <div class="step-description">
+      {{algorithmSteps[currentStep].description}}
+    </div>
+    <div class="control-item">
+      <button (click)="prevStep()" [disabled]="currentStep === 0">上一步</button>
+      <button (click)="isPlaying ? stopAnimation() : playAnimation()">
+        {{isPlaying ? '暂停' : '播放'}}
+      </button>
+      <button (click)="nextStep()" [disabled]="currentStep === algorithmSteps.length - 1">下一步</button>
+    </div>
+    <div class="control-item">
+      <label for="animationSpeed">动画速度:</label>
+      <input type="range" id="animationSpeed" [(ngModel)]="animationSpeed" min="100" max="2000" step="100" [disabled]="isPlaying">
+      <span>{{animationSpeed}}ms</span>
+    </div>
+  </div>
+</div>
