@@ -100,9 +100,19 @@ export class BigIntMultiplyService {
   }
 
   play() {
-    if (this.timer) return;
+    // 如果已经到最后一步，则不能播放
+    if (this.pointer >= this.steps.length - 1) return;
+
+    // 如果已经有定时器，先取消
+    this.pause();
+
+    // 创建新的定时器
     this.timer = interval(this.speed$.value).subscribe(() => {
-      if (!this.step()) this.pause();
+      console.log('播放步骤:', this.pointer + 1);
+      if (!this.step()) {
+        console.log('播放结束');
+        this.pause();
+      }
     });
   }
 
@@ -535,27 +545,11 @@ export class BigIntMultiplyService {
   get standardTestCases(): { name: string; config: BigIntConfig }[] {
     return [
       {
-        name: '简单乘法',
-        config: {
-          num1: '123',
-          num2: '456',
-          threshold: 2,
-        },
-      },
-      {
-        name: '中等乘法',
+        name: '测试样例',
         config: {
           num1: '123456789',
           num2: '987654321',
           threshold: 4,
-        },
-      },
-      {
-        name: '大数乘法',
-        config: {
-          num1: '9876543210987654321',
-          num2: '1234567890123456789',
-          threshold: 6,
         },
       },
     ];

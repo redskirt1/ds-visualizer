@@ -419,3 +419,4 @@ export class BigIntControlComponent implements OnInit {
     return ((this.currentStep() + 1) / this.bigIntService.stepCount) * 100;
   }
 }
+ 
