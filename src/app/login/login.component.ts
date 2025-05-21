@@ -4,6 +4,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
+import { AuthService } from '../services/auth.service';
+
 
 @Component({
   selector: 'app-login',
@@ -19,7 +21,9 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService  // 注入 AuthService
+
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required]],
@@ -40,13 +44,14 @@ export class LoginComponent implements OnInit {
     this.errorMessage = null;
 
     // 模拟登录请求
-    setTimeout(() => {
+    setTimeout(() => { 
       // 这里应该是实际的API调用
       const { username, password } = this.loginForm.value;
       
       if (username && password && username.length > 0 && password.length > 0) {
         localStorage.setItem('currentUser', JSON.stringify({ username }));
         console.log('登录成功:', username);
+        this.authService.flashLogin();
         // 登录成功
         this.router.navigate(['/home']);
       } else {
@@ -55,6 +60,6 @@ export class LoginComponent implements OnInit {
       }
       
       this.isSubmitting = false;
-    }, 1000);
+    }, 500);
   }
 }

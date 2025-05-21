@@ -20,6 +20,10 @@ export class AuthService {
   public get currentUserValue(): any {
     return this.currentUserSubject.value;
   }
+  public flashLogin(): any {
+    // 检查是否有用户信息
+    this.currentUserSubject = new BehaviorSubject<any>(this.getUserFromStorage());
+  }
 
   private getUserFromStorage(): any {
     const userStr = localStorage.getItem('currentUser');
@@ -35,17 +39,17 @@ export class AuthService {
         if (username && password && username.length > 0 && password.length > 0) {
           const user = { username };
           const token = 'jwt-token-' + Math.random().toString(36).substring(2);
-          
-    // 存储用户详细信息和jwt令牌
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    localStorage.setItem('token', token);
-    
-    // 通知所有订阅者
-    this.currentUserSubject.next(user);
+
+          // 存储用户详细信息和jwt令牌
+          localStorage.setItem('currentUser', JSON.stringify(user));
+          localStorage.setItem('token', token);
+
+          // 通知所有订阅者
+          this.currentUserSubject.next(user);
           resolve(true);
         } else {
           resolve(false);
-  }
+        }
       }, 1000);
     });
   }
