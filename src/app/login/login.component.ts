@@ -46,6 +46,7 @@ export class LoginComponent implements OnInit {
       
       if (username && password && username.length > 0 && password.length > 0) {
         localStorage.setItem('currentUser', JSON.stringify({ username }));
+        console.log('登录成功:', username);
         // 登录成功
         this.router.navigate(['/home']);
       } else {
