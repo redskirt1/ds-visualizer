@@ -1,1 +1,9 @@
-<p>tree works!</p>
+<div class="tree-container">
+  <app-control-panel (insert)="onInsert($event)" (clear)="onClear()" (play)="onPlay()" (pause)="onPause()"
+    (speedChange)="onSpeedChange($event)" (search)="onSearch($event)" ></app-control-panel>
+
+  <app-tree-visualizer></app-tree-visualizer>
+
+  <app-metrics-display [metrics]="metrics"></app-metrics-display>
+
+</div>

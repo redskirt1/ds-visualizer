@@ -10,6 +10,7 @@ import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { GraphComponent } from './graph/graph.component';
 import { GraphModule } from './graph/graph.module'; // 导入图形模块
+import { TreeComponent } from './tree/tree.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { GraphModule } from './graph/graph.module'; // 导入图形模块
     RegisterComponent,
     ReactiveFormsModule,
     GraphComponent,
-    GraphModule 
+    GraphModule,
+    TreeComponent
   ],
   providers: [],
   bootstrap: [AppComponent]

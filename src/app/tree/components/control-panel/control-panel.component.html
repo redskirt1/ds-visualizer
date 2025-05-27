@@ -1,0 +1,27 @@
+<div class="panel">
+  <!-- 插入节点 -->
+  <label>插入节点：</label>
+  <input type="number" [(ngModel)]="insertValue" />
+  <button (click)="onInsert()">插入</button>
+  <!-- 清空 -->
+  <button (click)="onClear()">清空树结构</button>
+  <!-- 搜索算法 -->
+  <label>搜索算法：</label>
+  <select [(ngModel)]="searchType">
+    <option value="dfs">DFS</option>
+    <option value="bfs">BFS</option>
+  </select>
+  <button (click)="onSearch()">执行搜索</button>
+
+  <!-- 动画控制 -->
+  <label>播放速度：</label>
+  <select [(ngModel)]="speed" (change)="onSpeedChange()">
+    <option [value]="0.5">0.5x</option>
+    <option [value]="1">1x</option>
+    <option [value]="2">2x</option>
+    <option [value]="4">4x</option>
+  </select>
+
+  <button (click)="onPlay()">播放动画</button>
+  <button (click)="onPause()">暂停</button>
+</div>
