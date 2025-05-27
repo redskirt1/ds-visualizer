@@ -1,6 +1,6 @@
 <div class="tree-container">
-  <app-control-panel (insert)="onInsert($event)" (clear)="onClear()" (play)="onPlay()" (pause)="onPause()"
-    (speedChange)="onSpeedChange($event)" (search)="onSearch($event)" ></app-control-panel>
+  <app-control-panel (insert)="onInsert($event)" (clear)="onClear()" (play)="onPlay()" (step)="onStep()" (pause)="onPause()"
+    (speedChange)="onSpeedChange($event)" (search)="onSearch($event)" (exportJson)="onExport()" (importJson)="onImportJson($event)"></app-control-panel>
 
   <app-tree-visualizer></app-tree-visualizer>
 

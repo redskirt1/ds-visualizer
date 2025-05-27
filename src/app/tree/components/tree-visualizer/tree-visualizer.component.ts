@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
 export class TreeVisualizerComponent implements OnInit {
   nodes: { value: number; x: number; y: number }[] = [];
   lines: { x1: number; y1: number; x2: number; y2: number }[] = [];
+  beziers: { d: string }[] = [];
   operations: TreeOperation[] = [];
   highlightedValues = new Set<number>();
   playing = false;
@@ -33,6 +34,11 @@ export class TreeVisualizerComponent implements OnInit {
       this.buildLayout(root, x, 40, null);
     }
   }
+  findNode(value: number): { x: number; y: number } | null {
+    const node = this.nodes.find((n) => n.value === value);
+    return node ? { x: node.x, y: node.y } : null;
+  }
+
   assignPositions(
     node: TreeNode | null,
     depth: number,
@@ -87,10 +93,26 @@ export class TreeVisualizerComponent implements OnInit {
       this.buildRenderData(root, null);
     }
   }
+  generateBezier(
+    fromX: number,
+    fromY: number,
+    toX: number,
+    toY: number
+  ): string {
+    const cx1 = fromX + (toX - fromX) / 2;
+    const cy1 = fromY;
+    const cx2 = toX - (toX - fromX) / 2;
+    const cy2 = toY;
+    return `M ${fromX + 20} ${fromY + 20} C ${cx1 + 20} ${cy1 + 20}, ${
+      cx2 + 20
+    } ${cy2 + 20}, ${toX + 20} ${toY + 20}`;
+  }
 
   playOperations(): void {
+    this.stepIndex = 0;
     this.playing = true;
     let i = 0;
+    this.beziers = [];
 
     const step = () => {
       if (!this.playing || i >= this.operations.length) return;
@@ -98,23 +120,21 @@ export class TreeVisualizerComponent implements OnInit {
       const op = this.operations[i];
       this.highlightedValues.clear();
 
-      if (
-        op.type === OperationType.INSERT ||
-        op.type === OperationType.HIGHLIGHT
-      ) {
-        op.nodes.forEach((v) => this.highlightedValues.add(v));
+      if (op.type.startsWith('ROTATE')) {
+        const fromNode = this.findNode(op.nodes[0]);
+        const toNode = this.findNode(op.nodes[1] ?? op.nodes[0]);
+        if (fromNode && toNode) {
+          const d = this.generateBezier(
+            fromNode.x,
+            fromNode.y,
+            toNode.x,
+            toNode.y
+          );
+          this.beziers.push({ d });
+        }
       }
 
-      if (
-        op.type === OperationType.ROTATE_LEFT ||
-        op.type === OperationType.ROTATE_RIGHT ||
-        op.type === OperationType.ROTATE_LR ||
-        op.type === OperationType.ROTATE_RL
-      ) {
-        op.nodes.forEach((v) => this.highlightedValues.add(v));
-        // 你可以在此加入旋转动画（例如触发类变换）
-      }
-
+      op.nodes.forEach((v) => this.highlightedValues.add(v));
       i++;
       setTimeout(step, 1000 / this.speed);
     };
@@ -172,5 +192,91 @@ export class TreeVisualizerComponent implements OnInit {
     this.nodes = [];
     this.lines = [];
     this.highlightedValues.clear();
+  }
+  onDragStart(event: DragEvent): void {
+    event.dataTransfer?.setData('text/plain', 'new-node');
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault(); // 允许 drop
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+
+    const data = event.dataTransfer?.getData('text/plain');
+    if (data === 'new-node') {
+      const canvas = (event.target as HTMLElement).getBoundingClientRect();
+      const x = event.clientX - canvas.left;
+      const y = event.clientY - canvas.top;
+
+      const valueStr = prompt('请输入节点值');
+      if (valueStr !== null) {
+        const value = parseInt(valueStr);
+
+        this.treeService.insert(value);
+        const allOps = this.treeService.getOperations();
+
+        const rotateOps = allOps.filter((op) => op.type.startsWith('ROTATE'));
+
+        this.treeService.setOperations(rotateOps);
+        this.refreshLayout();
+        this.playOperations(); // 播放轨迹动画
+
+        this.treeService.setOperations(allOps);
+      }
+    }
+  }
+
+  contextMenu = {
+    visible: false,
+    x: 0,
+    y: 0,
+    targetValue: 0,
+  };
+
+  onRightClick(event: MouseEvent, value: number): void {
+    event.preventDefault();
+    this.contextMenu.visible = true;
+    this.contextMenu.x = event.clientX;
+    this.contextMenu.y = event.clientY;
+    this.contextMenu.targetValue = value;
+  }
+
+  modifyNode(): void {
+    const newVal = prompt('请输入新值');
+    if (newVal !== null) {
+      this.treeService.modify(this.contextMenu.targetValue, parseInt(newVal));
+      this.refreshLayout();
+    }
+    this.contextMenu.visible = false;
+  }
+
+  deleteNode(): void {
+    this.treeService.delete(this.contextMenu.targetValue);
+
+    this.refreshLayout();
+    this.playOperations();
+
+    this.contextMenu.visible = false;
+  }
+
+  stepIndex = 0;
+
+  step(): void {
+    this.playing = false;
+
+    if (!this.operations || this.operations.length === 0) return;
+    if (this.stepIndex >= this.operations.length) return;
+
+    const op = this.operations[this.stepIndex];
+    this.stepIndex++;
+
+    this.highlightedValues.clear();
+    op.nodes.forEach((v) => this.highlightedValues.add(v));
+  }
+
+  clearBezier(): void {
+    this.beziers = [];
   }
 }

@@ -125,7 +125,10 @@ export class TreeService {
 
     z.height = 1 + Math.max(this.getHeight(z.left), this.getHeight(z.right));
     y.height = 1 + Math.max(this.getHeight(y.left), this.getHeight(y.right));
-
+    this.operations.push({
+      type: OperationType.ROTATE_LEFT, // 或 ROTATE_RIGHT
+      nodes: [z.value, y.value],
+    });
     return y;
   }
 
@@ -139,7 +142,10 @@ export class TreeService {
 
     z.height = 1 + Math.max(this.getHeight(z.left), this.getHeight(z.right));
     y.height = 1 + Math.max(this.getHeight(y.left), this.getHeight(y.right));
-
+    this.operations.push({
+      type: OperationType.ROTATE_RIGHT,
+      nodes: [z.value, y.value], 
+    });
     return y;
   }
 
@@ -161,5 +167,107 @@ export class TreeService {
       rotateCount: 0,
       visitedCount: 0,
     };
+  }
+  delete(value: number): void {
+    this.root = this._delete(this.root, value);
+  }
+
+  modify(oldVal: number, newVal: number): void {
+    this.delete(oldVal);
+    this.insert(newVal);
+  }
+
+  private _delete(node: TreeNode | null, value: number): TreeNode | null {
+    if (!node) return null;
+
+    // Step 1: 标准 BST 删除
+    if (value < node.value) {
+      node.left = this._delete(node.left, value);
+    } else if (value > node.value) {
+      node.right = this._delete(node.right, value);
+    } else {
+      // 找到要删除的节点
+      if (!node.left || !node.right) {
+        const child = node.left || node.right;
+        return child;
+      } else {
+        // 有两个子节点，用右子树中的最小值替代
+        const minNode = this.getMinNode(node.right);
+        node.value = minNode.value;
+        node.right = this._delete(node.right, minNode.value);
+      }
+    }
+
+    // Step 2: 更新高度
+    node.height =
+      1 + Math.max(this.getHeight(node.left), this.getHeight(node.right));
+
+    // Step 3: 获取平衡因子
+    const balance = this.getBalance(node);
+
+    // Step 4: 执行旋转保持平衡
+    // Left Left
+    if (balance > 1 && this.getBalance(node.left) >= 0) {
+      this.operations.push({
+        type: OperationType.ROTATE_RIGHT,
+        nodes: [node.value],
+      });
+      return this.rotateRight(node);
+    }
+
+    // Left Right
+    if (balance > 1 && this.getBalance(node.left) < 0) {
+      this.operations.push({
+        type: OperationType.ROTATE_LEFT,
+        nodes: [node.left!.value],
+      });
+      node.left = this.rotateLeft(node.left!);
+      this.operations.push({
+        type: OperationType.ROTATE_RIGHT,
+        nodes: [node.value],
+      });
+      return this.rotateRight(node);
+    }
+
+    // Right Right
+    if (balance < -1 && this.getBalance(node.right) <= 0) {
+      this.operations.push({
+        type: OperationType.ROTATE_LEFT,
+        nodes: [node.value],
+      });
+      return this.rotateLeft(node);
+    }
+
+    // Right Left
+    if (balance < -1 && this.getBalance(node.right) > 0) {
+      this.operations.push({
+        type: OperationType.ROTATE_RIGHT,
+        nodes: [node.right!.value],
+      });
+      node.right = this.rotateRight(node.right!);
+      this.operations.push({
+        type: OperationType.ROTATE_LEFT,
+        nodes: [node.value],
+      });
+      return this.rotateLeft(node);
+    }
+
+    return node;
+  }
+
+  private getMinNode(node: TreeNode): TreeNode {
+    let current = node;
+    while (current.left) {
+      current = current.left;
+    }
+    return current;
+  }
+
+  exportToJson(): string {
+    return JSON.stringify(this.root, null, 2);
+  }
+
+  importFromJson(json: string): void {
+    this.root = JSON.parse(json);
   }
 }

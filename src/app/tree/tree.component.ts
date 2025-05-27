@@ -6,7 +6,7 @@ import { MetricsDisplayComponent } from './components/metrics-display/metrics-di
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AlgorithmService } from './services/algorithm.service';
-import { TreeOperation } from './models/enum';
+import { OperationType, TreeOperation } from './models/enum';
 
 @Component({
   selector: 'app-tree',
@@ -34,8 +34,22 @@ export class TreeComponent {
 
   onInsert(value: number): void {
     this.treeService.insert(value);
-    // 重新加载节点数据或刷新可视化组件
-    this.visualizer.refreshLayout(); // 你需要在 TreeVisualizerComponent 中提供该方法
+
+    const allOps = this.treeService.getOperations();
+
+    const rotationOps = allOps.filter(
+      (op) =>
+        op.type === OperationType.ROTATE_LEFT ||
+        op.type === OperationType.ROTATE_RIGHT ||
+        op.type === OperationType.ROTATE_LR ||
+        op.type === OperationType.ROTATE_RL
+    );
+
+    this.treeService.setOperations(rotationOps);
+    this.visualizer.refreshLayout();
+    this.visualizer.playOperations();
+
+    this.treeService.setOperations(allOps);
   }
 
   onPlay(): void {
@@ -75,5 +89,61 @@ export class TreeComponent {
   onClear(): void {
     this.treeService.clearTree();
     this.visualizer.clearLayout();
+  }
+
+  onExportJson(): void {
+    const data = this.treeService.exportToJson();
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tree.json';
+    a.click();
+  }
+
+  onImportJson(file: File): void {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      try {
+        const json = reader.result as string;
+
+        // 1️⃣ 导入数据到 treeService
+        this.treeService.importFromJson(json);
+
+        // 2️⃣ 清空动画操作列表
+        this.treeService.setOperations([]);
+
+        // 3️⃣ 重新生成可视化布局
+        this.visualizer.refreshLayout();
+
+        // 4️⃣ 清空轨迹动画（可选）
+        this.visualizer.clearBezier?.();
+
+        console.log('✅ JSON 导入成功：', this.treeService.getRoot());
+      } catch (err) {
+        console.error('❌ 导入失败：JSON格式错误', err);
+        alert('导入失败，请检查 JSON 格式是否正确');
+      }
+    };
+
+    reader.readAsText(file);
+  }
+
+  onStep(): void {
+    this.visualizer.step();
+  }
+
+  onExport(): void {
+    const data = this.treeService.exportToJson(); // 应该返回字符串
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tree-structure.json';
+    a.click();
+
+    URL.revokeObjectURL(url); // 清理内存
   }
 }

@@ -12,6 +12,7 @@
     <option value="bfs">BFS</option>
   </select>
   <button (click)="onSearch()">执行搜索</button>
+  <button (click)="onStep()">单步执行</button>
 
   <!-- 动画控制 -->
   <label>播放速度：</label>
@@ -21,6 +22,10 @@
     <option [value]="2">2x</option>
     <option [value]="4">4x</option>
   </select>
+
+  <button (click)="onExport()">导出 JSON</button>
+
+  <input type="file" accept=".json" (change)="onImport($event)" />
 
   <button (click)="onPlay()">播放动画</button>
   <button (click)="onPause()">暂停</button>

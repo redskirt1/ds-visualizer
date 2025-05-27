@@ -1,27 +1,30 @@
 <!-- tree-visualizer.component.html -->
-<div class="tree-canvas">
+<div class="drag-palette" draggable="true" (dragstart)="onDragStart($event)">
+  拖我生成节点
+</div>
+<div class="tree-canvas" (drop)="onDrop($event)" (dragover)="onDragOver($event)">
   <svg class="tree-lines">
     <ng-container *ngFor="let line of lines">
-      <line
-        [attr.x1]="line.x1"
-        [attr.y1]="line.y1"
-        [attr.x2]="line.x2"
-        [attr.y2]="line.y2"
-        stroke="black"
-      />
+      <line [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2" stroke="#666"
+        stroke-width="2" />
+    </ng-container>
+
+    <ng-container *ngFor="let bezier of beziers">
+      <path [attr.d]="bezier.d" stroke="red" stroke-width="3" fill="none" stroke-dasharray="6,6" />
     </ng-container>
   </svg>
 
   <ng-container *ngFor="let node of nodes">
-    <div
-      class="tree-node"
-      [ngClass]="{ highlighted: highlightedValues.has(node.value) }"
-      [style.left.px]="node.x"
-      [style.top.px]="node.y"
-    >
+    <div class="tree-node" [ngClass]="{ highlighted: highlightedValues.has(node.value) }" [style.left.px]="node.x"
+      [style.top.px]="node.y" (contextmenu)="onRightClick($event, node.value)">
       {{ node.value }}
     </div>
+
+    <ul class="context-menu" *ngIf="contextMenu.visible" [style.left.px]="contextMenu.x" [style.top.px]="contextMenu.y">
+      <li (click)="modifyNode()">修改</li>
+      <li (click)="deleteNode()">删除</li>
+    </ul>
   </ng-container>
+
+
 </div>
-
-

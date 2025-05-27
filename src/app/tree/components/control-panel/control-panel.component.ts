@@ -18,6 +18,9 @@ export class ControlPanelComponent {
   @Output() speedChange = new EventEmitter<number>();
   @Output() search = new EventEmitter<string>();
   @Output() clear = new EventEmitter<void>();
+  @Output() exportJson = new EventEmitter<void>();
+  @Output() importJson = new EventEmitter<File>();
+  @Output() step = new EventEmitter<void>();
 
   searchType: string = 'dfs';
 
@@ -43,5 +46,20 @@ export class ControlPanelComponent {
 
   onClear(): void {
     this.clear.emit();
+  }
+
+  onExport(): void {
+    this.exportJson.emit();
+  }
+
+  onImport(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.importJson.emit(file);
+    }
+  }
+
+  onStep(): void {
+    this.step.emit();
   }
 }

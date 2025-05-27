@@ -23,14 +23,45 @@
 
 .tree-lines {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 500px;
-  z-index: 0;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
 }
+
 
 .tree-node.highlighted {
   background-color: #ff9800;
   transform: scale(1.3) rotate(10deg);
   transition: all 0.3s ease;
 }
+
+.drag-palette {
+  width: 150px;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  background-color: #90caf9;
+  border-radius: 4px;
+  cursor: grab;
+}
+
+.context-menu {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #aaa;
+  list-style: none;
+  padding: 0.5rem;
+  z-index: 10;
+  width: 100px;
+}
+.context-menu li {
+  padding: 5px;
+  cursor: pointer;
+}
+.context-menu li:hover {
+  background-color: #eee;
+}
+
 
