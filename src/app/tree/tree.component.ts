@@ -324,18 +324,16 @@ export class TreeComponent {
     // 4. 清理动画状态
     this.visualizer.beziers = [];
 
-    // 5. 延迟清除高亮
-    setTimeout(() => {
-      this.visualizer.highlightedValues.clear();
-    }, 500);
+    // 5. 立即清除高亮状态，避免节点一直高亮
+    this.visualizer.highlightedValues.clear();
+
+    // 6. 确保动画状态完全重置
+    this.visualizer.playing = false;
+    this.visualizer.currentAnimation = null;
   }
 
   private easeInOutCubic(t: number): number {
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-  }
-
-  onPlay(): void {
-    this.visualizer.playOperations();
   }
 
   onPause(): void {
@@ -447,5 +445,131 @@ export class TreeComponent {
     a.click();
 
     URL.revokeObjectURL(url); // 清理内存
+  }
+
+  onDelete(value: number): void {
+    console.log('🗑️ 开始删除节点:', value);
+
+    // 1. 保存删除前的树状态和布局
+    const beforeDeleteRoot = this.treeService.exportToJson();
+
+    console.log('💾 保存删除前状态');
+
+    // 2. 清空操作记录
+    this.treeService.setOperations([]);
+
+    // 3. 执行删除操作，获取旋转操作记录和最终状态
+    this.treeService.delete(value);
+
+    // 4. 获取删除后的操作记录和最终状态
+    const allOps = this.treeService.getOperations();
+    const finalTreeState = this.treeService.exportToJson();
+    const rotationOps = allOps.filter(
+      (op) =>
+        op.type === OperationType.ROTATE_LEFT ||
+        op.type === OperationType.ROTATE_RIGHT ||
+        op.type === OperationType.ROTATE_LR ||
+        op.type === OperationType.ROTATE_RL
+    );
+
+    console.log('📝 删除操作完成，旋转操作数量:', rotationOps.length);
+
+    if (rotationOps.length > 0) {
+      console.log('🎬 准备播放删除旋转动画');
+
+      // 5. 创建删除节点后但未旋转的中间状态
+      const beforeRotationState = this.createBeforeRotationStateForDelete(
+        beforeDeleteRoot,
+        value
+      );
+
+      // 6. 设置旋转前状态（已删除节点，但未旋转）
+      this.treeService.importFromJson(beforeRotationState);
+      this.visualizer.refreshLayout();
+      const beforeRotationLayout = this.visualizer.nodes.map((node) => ({
+        ...node,
+      }));
+
+      // 7. 获取最终状态的布局
+      this.treeService.importFromJson(finalTreeState);
+      this.visualizer.refreshLayout();
+      const afterRotationLayout = this.visualizer.nodes.map((node) => ({
+        ...node,
+      }));
+
+      // 8. 恢复到旋转前状态显示（已删除节点）
+      this.treeService.importFromJson(beforeRotationState);
+      this.visualizer.refreshLayout();
+
+      // 9. 创建动画数据
+      const animationData = this.createAnimationData(
+        beforeRotationLayout,
+        afterRotationLayout,
+        rotationOps[0]
+      );
+
+      if (animationData) {
+        // 10. 播放动画，动画完成后更新到最终状态
+        this.playRotationAnimationWithFinalUpdate(
+          animationData,
+          afterRotationLayout,
+          finalTreeState
+        );
+      } else {
+        console.log('❌ 无法创建删除动画数据');
+        // 如果无法创建动画，直接更新到最终状态
+        this.treeService.importFromJson(finalTreeState);
+        this.visualizer.refreshLayout();
+      }
+    } else {
+      // 没有旋转操作，直接更新显示
+      this.visualizer.refreshLayout();
+    }
+  }
+
+  private createBeforeRotationStateForDelete(
+    beforeDeleteRoot: string,
+    deleteValue: number
+  ): string {
+    // 解析原始树状态
+    const originalTree = JSON.parse(beforeDeleteRoot);
+
+    // 创建一个简单的BST删除（不进行AVL平衡）
+    const deleteNodeSimple = (node: any, value: number): any => {
+      if (!node) return null;
+
+      if (value < node.value) {
+        node.left = deleteNodeSimple(node.left, value);
+      } else if (value > node.value) {
+        node.right = deleteNodeSimple(node.right, value);
+      } else {
+        // 找到要删除的节点
+        if (!node.left || !node.right) {
+          return node.left || node.right;
+        } else {
+          // 有两个子节点，用右子树中的最小值替代
+          const minNode = this.findMinNode(node.right);
+          node.value = minNode.value;
+          node.right = deleteNodeSimple(node.right, minNode.value);
+        }
+      }
+      return node;
+    };
+
+    // 在原始树中删除节点（不平衡）
+    const beforeRotationTree = originalTree
+      ? deleteNodeSimple(JSON.parse(JSON.stringify(originalTree)), deleteValue)
+      : null;
+
+    console.log('🌳 创建删除后旋转前状态:', beforeRotationTree);
+
+    return JSON.stringify(beforeRotationTree);
+  }
+
+  private findMinNode(node: any): any {
+    while (node.left) {
+      node = node.left;
+    }
+    return node;
   }
 }

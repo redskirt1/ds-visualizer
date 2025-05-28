@@ -13,7 +13,6 @@ export class ControlPanelComponent {
   speed: number = 1;
 
   @Output() insert = new EventEmitter<number>();
-  @Output() play = new EventEmitter<void>();
   @Output() pause = new EventEmitter<void>();
   @Output() speedChange = new EventEmitter<number>();
   @Output() search = new EventEmitter<string>();
@@ -31,10 +30,6 @@ export class ControlPanelComponent {
 
   onInsert(): void {
     this.insert.emit(this.insertValue);
-  }
-
-  onPlay(): void {
-    this.play.emit();
   }
 
   onPause(): void {

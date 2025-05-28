@@ -1,5 +1,5 @@
 // tree-visualizer.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { TreeService } from '../../services/tree.service';
 import { TreeNode } from '../../models/tree-node.model';
 import { OperationType, TreeOperation } from '../../models/enum';
@@ -57,6 +57,9 @@ export class TreeVisualizerComponent implements OnInit {
   nodeSize = 50; // 改为public
   private verticalGap = 80;
   private horizontalGap = 50;
+
+  @Output() deleteNodeEvent = new EventEmitter<number>();
+  @Output() insertNodeEvent = new EventEmitter<number>();
 
   constructor(private treeService: TreeService) {}
 
@@ -633,6 +636,9 @@ export class TreeVisualizerComponent implements OnInit {
     // 清除贝塞尔曲线
     this.beziers = [];
 
+    // 清除高亮状态
+    this.highlightedValues.clear();
+
     // 继续下一个操作
     this.stepIndex++;
     setTimeout(() => this.processOperations(), 500 / this.speed);
@@ -755,17 +761,7 @@ export class TreeVisualizerComponent implements OnInit {
       const valueStr = prompt('请输入节点值');
       if (valueStr !== null) {
         const value = parseInt(valueStr);
-
-        this.treeService.insert(value);
-        const allOps = this.treeService.getOperations();
-
-        const rotateOps = allOps.filter((op) => op.type.startsWith('ROTATE'));
-
-        this.treeService.setOperations(rotateOps);
-        this.refreshLayout();
-        this.playOperations(); // 播放轨迹动画
-
-        this.treeService.setOperations(allOps);
+        this.insertNodeEvent.emit(value);
       }
     }
   }
@@ -843,12 +839,8 @@ export class TreeVisualizerComponent implements OnInit {
   }
 
   deleteNode(): void {
-    this.treeService.delete(this.contextMenu.targetValue);
-
-    this.refreshLayout();
-    this.playOperations();
-
     this.contextMenu.visible = false;
+    this.deleteNodeEvent.emit(this.contextMenu.targetValue);
   }
 
   stepIndex = 0;

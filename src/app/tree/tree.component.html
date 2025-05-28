@@ -9,7 +9,6 @@
   <app-control-panel
     (insert)="onInsert($event)"
     (clear)="onClear()"
-    (play)="onPlay()"
     (step)="onStep()"
     (pause)="onPause()"
     (speedChange)="onSpeedChange($event)"
@@ -19,7 +18,10 @@
     (testRotation)="onTestRotation()"
   ></app-control-panel>
 
-  <app-tree-visualizer></app-tree-visualizer>
+  <app-tree-visualizer
+    (deleteNodeEvent)="onDelete($event)"
+    (insertNodeEvent)="onInsert($event)"
+  ></app-tree-visualizer>
 
   <app-metrics-display [metrics]="metrics"></app-metrics-display>
 </div>
