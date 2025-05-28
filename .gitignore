@@ -40,3 +40,7 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Course materials
+course_paper.md
+课程论文_精简版.md

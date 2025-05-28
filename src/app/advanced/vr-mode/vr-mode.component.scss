@@ -1,0 +1,470 @@
+$primary-color: #2196f3;
+$secondary-color: #ff9800;
+$accent-color: #4caf50;
+$warning-color: #f44336;
+$background-dark: #1a1a1a;
+$surface-dark: #2d2d2d;
+$text-light: #ffffff;
+$text-secondary: #b0b0b0;
+
+.vr-mode-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(135deg, $background-dark 0%, #0d1421 100%);
+  color: $text-light;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+}
+
+.vr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: rgba($surface-dark, 0.9);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba($primary-color, 0.3);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+
+  h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+    background: linear-gradient(45deg, $primary-color, $secondary-color);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .mode-indicator {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: rgba($text-secondary, 0.1);
+    border: 1px solid rgba($text-secondary, 0.3);
+    transition: all 0.3s ease;
+
+    &.vr-active {
+      background: linear-gradient(45deg, $accent-color, #66bb6a);
+      border-color: $accent-color;
+      color: white;
+      animation: pulse 2s infinite;
+    }
+  }
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.visualization-container {
+  flex: 2;
+  position: relative;
+  background: $background-dark;
+  border-right: 1px solid rgba($primary-color, 0.2);
+
+  .vr-canvas-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+
+    canvas {
+      display: block;
+      border-radius: 8px;
+    }
+  }
+
+  .overlay-controls {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+
+    .control-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+
+      button {
+        padding: 0.7rem 1.2rem;
+        border: none;
+        border-radius: 8px;
+        background: rgba($surface-dark, 0.9);
+        color: $text-light;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba($primary-color, 0.3);
+
+        &:hover {
+          background: rgba($primary-color, 0.8);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba($primary-color, 0.4);
+        }
+
+        &.active {
+          background: linear-gradient(45deg, $accent-color, #66bb6a);
+          border-color: $accent-color;
+        }
+
+        &.vr-toggle-btn {
+          background: linear-gradient(45deg, $secondary-color, #ffb74d);
+          border-color: $secondary-color;
+
+          &:hover {
+            background: linear-gradient(45deg, #ff8f00, $secondary-color);
+          }
+        }
+      }
+    }
+  }
+}
+
+.control-panel {
+  flex: 1;
+  background: rgba($surface-dark, 0.95);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  border-left: 1px solid rgba($primary-color, 0.2);
+  padding: 2rem;
+  overflow-y: auto;
+  max-width: 400px;
+
+  .panel-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba($background-dark, 0.5);
+    border-radius: 12px;
+    border: 1px solid rgba($primary-color, 0.2);
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: rgba($primary-color, 0.5);
+      box-shadow: 0 4px 20px rgba($primary-color, 0.1);
+    }
+
+    h3 {
+      margin: 0 0 1rem 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: $primary-color;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .control-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+
+      label {
+        min-width: 80px;
+        font-size: 0.9rem;
+        color: $text-secondary;
+      }
+
+      .slider {
+        flex: 1;
+        height: 6px;
+        border-radius: 3px;
+        background: rgba($primary-color, 0.2);
+        outline: none;
+        cursor: pointer;
+
+        &::-webkit-slider-thumb {
+          appearance: none;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: linear-gradient(45deg, $primary-color, #42a5f5);
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba($primary-color, 0.4);
+          transition: all 0.2s ease;
+
+          &:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 15px rgba($primary-color, 0.6);
+          }
+        }
+      }
+
+      .value {
+        min-width: 50px;
+        text-align: right;
+        font-weight: 500;
+        color: $primary-color;
+      }
+    }
+
+    .operation-group {
+      .input-group {
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        label {
+          font-size: 0.9rem;
+          color: $text-secondary;
+          font-weight: 500;
+        }
+
+        .input-field {
+          padding: 0.8rem;
+          border: 1px solid rgba($primary-color, 0.3);
+          border-radius: 8px;
+          background: rgba($background-dark, 0.7);
+          color: $text-light;
+          font-size: 0.9rem;
+          transition: all 0.3s ease;
+
+          &:focus {
+            outline: none;
+            border-color: $primary-color;
+            box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+          }
+
+          &::placeholder {
+            color: rgba($text-secondary, 0.7);
+          }
+        }
+
+        .action-btn {
+          padding: 0.8rem 1.5rem;
+          border: none;
+          border-radius: 8px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+
+          &.insert-btn {
+            background: linear-gradient(45deg, $accent-color, #66bb6a);
+            color: white;
+
+            &:hover {
+              background: linear-gradient(45deg, #388e3c, $accent-color);
+              transform: translateY(-2px);
+              box-shadow: 0 4px 15px rgba($accent-color, 0.4);
+            }
+          }
+
+          &.search-btn {
+            background: linear-gradient(45deg, $primary-color, #42a5f5);
+            color: white;
+
+            &:hover {
+              background: linear-gradient(45deg, #1976d2, $primary-color);
+              transform: translateY(-2px);
+              box-shadow: 0 4px 15px rgba($primary-color, 0.4);
+            }
+          }
+
+          &.delete-btn {
+            background: linear-gradient(45deg, $warning-color, #ef5350);
+            color: white;
+
+            &:hover {
+              background: linear-gradient(45deg, #d32f2f, $warning-color);
+              transform: translateY(-2px);
+              box-shadow: 0 4px 15px rgba($warning-color, 0.4);
+            }
+          }
+
+          &.reset-btn {
+            background: linear-gradient(45deg, #607d8b, #78909c);
+            color: white;
+
+            &:hover {
+              background: linear-gradient(45deg, #455a64, #607d8b);
+              transform: translateY(-2px);
+              box-shadow: 0 4px 15px rgba(96, 125, 139, 0.4);
+            }
+          }
+        }
+      }
+    }
+
+    .result-display {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba($primary-color, 0.1);
+      border: 1px solid rgba($primary-color, 0.3);
+      border-radius: 8px;
+      animation: slideIn 0.3s ease-out;
+
+      .result-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .result-icon {
+          font-size: 1.2rem;
+        }
+
+        .result-text {
+          color: $text-light;
+          font-size: 0.9rem;
+          line-height: 1.4;
+        }
+      }
+    }
+
+    .instructions {
+      .instruction-item {
+        margin-bottom: 1rem;
+
+        strong {
+          color: $primary-color;
+          font-size: 0.95rem;
+        }
+
+        ul {
+          margin: 0.5rem 0;
+          padding-left: 1rem;
+
+          li {
+            font-size: 0.85rem;
+            color: $text-secondary;
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+          }
+        }
+
+        p {
+          font-size: 0.9rem;
+          color: $text-secondary;
+          margin: 0.5rem 0;
+          line-height: 1.4;
+        }
+
+        .color-indicator {
+          width: 12px;
+          height: 12px;
+          border-radius: 2px;
+          display: inline-block;
+
+          &.internal {
+            background: #0066cc;
+          }
+
+          &.leaf {
+            background: #00aa00;
+          }
+
+          &.link {
+            background: #ff6600;
+          }
+        }
+      }
+    }
+  }
+}
+
+// 动画
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 响应式设计
+@media (max-width: 1200px) {
+  .main-content {
+    flex-direction: column;
+  }
+
+  .control-panel {
+    max-width: none;
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .vr-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+
+    h2 {
+      font-size: 1.4rem;
+    }
+  }
+
+  .control-panel {
+    padding: 1rem;
+
+    .panel-section {
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  .overlay-controls {
+    .control-group {
+      button {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+      }
+    }
+  }
+}
+
+// 滚动条样式
+.control-panel {
+  scrollbar-width: thin;
+  scrollbar-color: rgba($primary-color, 0.5) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($primary-color, 0.5);
+    border-radius: 3px;
+
+    &:hover {
+      background: rgba($primary-color, 0.7);
+    }
+  }
+}
