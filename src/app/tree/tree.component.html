@@ -1,9 +1,25 @@
 <div class="tree-container">
-  <app-control-panel (insert)="onInsert($event)" (clear)="onClear()" (play)="onPlay()" (step)="onStep()" (pause)="onPause()"
-    (speedChange)="onSpeedChange($event)" (search)="onSearch($event)" (exportJson)="onExport()" (importJson)="onImportJson($event)"></app-control-panel>
+  <h2>数据结构可视化 - 二叉搜索树</h2>
+  <p class="intro">
+    二叉搜索树（BST）是一种基础的数据结构，具有左小右大的特性。
+    通过交互式可视化，您可以观察插入、删除、搜索等操作的动态过程，
+    理解各种算法的执行流程和时间复杂度。支持拖拽插入节点和多种搜索算法。
+  </p>
+
+  <app-control-panel
+    (insert)="onInsert($event)"
+    (clear)="onClear()"
+    (play)="onPlay()"
+    (step)="onStep()"
+    (pause)="onPause()"
+    (speedChange)="onSpeedChange($event)"
+    (search)="onSearch($event)"
+    (exportJson)="onExport()"
+    (importJson)="onImportJson($event)"
+    (testRotation)="onTestRotation()"
+  ></app-control-panel>
 
   <app-tree-visualizer></app-tree-visualizer>
 
   <app-metrics-display [metrics]="metrics"></app-metrics-display>
-
 </div>

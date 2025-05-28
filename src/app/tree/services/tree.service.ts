@@ -33,7 +33,6 @@ export class TreeService {
     return this.metrics;
   }
   insert(value: number): void {
-    this.operations = [];
     this.root = this._insert(this.root, value);
   }
   private countNodes(node: TreeNode | null): number {
@@ -125,10 +124,7 @@ export class TreeService {
 
     z.height = 1 + Math.max(this.getHeight(z.left), this.getHeight(z.right));
     y.height = 1 + Math.max(this.getHeight(y.left), this.getHeight(y.right));
-    this.operations.push({
-      type: OperationType.ROTATE_LEFT, // 或 ROTATE_RIGHT
-      nodes: [z.value, y.value],
-    });
+
     return y;
   }
 
@@ -142,10 +138,7 @@ export class TreeService {
 
     z.height = 1 + Math.max(this.getHeight(z.left), this.getHeight(z.right));
     y.height = 1 + Math.max(this.getHeight(y.left), this.getHeight(y.right));
-    this.operations.push({
-      type: OperationType.ROTATE_RIGHT,
-      nodes: [z.value, y.value], 
-    });
+
     return y;
   }
 

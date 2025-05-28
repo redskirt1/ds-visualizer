@@ -1,9 +1,53 @@
-<div class="metrics-box">
-  <h3>算法指标展示</h3>
-  <p>总节点数：{{ metrics.nodeCount }}</p>
-  <p>树高度：{{ metrics.height }}</p>
-  <p>插入次数：{{ metrics.insertCount }}</p>
-  <p>旋转次数：{{ metrics.rotateCount }}</p>
-  <p>最近搜索类型：{{ metrics.lastSearchType }}</p>
-  <p>已访问节点数：{{ metrics.visitedCount }}</p>
+<div class="metrics-panel">
+  <h3>算法性能指标</h3>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon">🌳</div>
+      <div class="metric-content">
+        <span class="metric-label">总节点数</span>
+        <span class="metric-value">{{ metrics.nodeCount }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon">📏</div>
+      <div class="metric-content">
+        <span class="metric-label">树高度</span>
+        <span class="metric-value">{{ metrics.height }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon">➕</div>
+      <div class="metric-content">
+        <span class="metric-label">插入次数</span>
+        <span class="metric-value">{{ metrics.insertCount }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon">🔄</div>
+      <div class="metric-content">
+        <span class="metric-label">旋转次数</span>
+        <span class="metric-value">{{ metrics.rotateCount }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon">🔍</div>
+      <div class="metric-content">
+        <span class="metric-label">搜索类型</span>
+        <span class="metric-value">{{ metrics.lastSearchType || "-" }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon">👁️</div>
+      <div class="metric-content">
+        <span class="metric-label">已访问节点</span>
+        <span class="metric-value">{{ metrics.visitedCount }}</span>
+      </div>
+    </div>
+  </div>
 </div>

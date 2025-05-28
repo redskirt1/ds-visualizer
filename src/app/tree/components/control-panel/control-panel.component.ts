@@ -21,6 +21,7 @@ export class ControlPanelComponent {
   @Output() exportJson = new EventEmitter<void>();
   @Output() importJson = new EventEmitter<File>();
   @Output() step = new EventEmitter<void>();
+  @Output() testRotation = new EventEmitter<void>();
 
   searchType: string = 'dfs';
 
@@ -61,5 +62,9 @@ export class ControlPanelComponent {
 
   onStep(): void {
     this.step.emit();
+  }
+
+  onTestRotation(): void {
+    this.testRotation.emit();
   }
 }

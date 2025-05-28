@@ -33,10 +33,22 @@ export class TreeComponent {
   }
 
   onInsert(value: number): void {
+    console.log('🔄 开始插入节点:', value);
+
+    // 1. 保存插入前的树状态和布局
+    const beforeInsertRoot = this.treeService.exportToJson();
+
+    console.log('💾 保存插入前状态');
+
+    // 2. 清空操作记录
+    this.treeService.setOperations([]);
+
+    // 3. 执行插入操作，获取旋转操作记录和最终状态
     this.treeService.insert(value);
 
+    // 4. 获取插入后的操作记录和最终状态
     const allOps = this.treeService.getOperations();
-
+    const finalTreeState = this.treeService.exportToJson();
     const rotationOps = allOps.filter(
       (op) =>
         op.type === OperationType.ROTATE_LEFT ||
@@ -45,11 +57,281 @@ export class TreeComponent {
         op.type === OperationType.ROTATE_RL
     );
 
-    this.treeService.setOperations(rotationOps);
-    this.visualizer.refreshLayout();
-    this.visualizer.playOperations();
+    console.log('📝 插入操作完成，旋转操作数量:', rotationOps.length);
 
-    this.treeService.setOperations(allOps);
+    if (rotationOps.length > 0) {
+      console.log('🎬 准备播放旋转动画');
+
+      // 5. 创建包含新节点的旋转前状态
+      const beforeRotationState = this.createBeforeRotationState(
+        beforeInsertRoot,
+        value
+      );
+
+      // 6. 设置旋转前状态（包含新插入的节点，但未旋转）
+      this.treeService.importFromJson(beforeRotationState);
+      this.visualizer.refreshLayout();
+      const beforeRotationLayout = this.visualizer.nodes.map((node) => ({
+        ...node,
+      }));
+
+      // 7. 获取最终状态的布局
+      this.treeService.importFromJson(finalTreeState);
+      this.visualizer.refreshLayout();
+      const afterRotationLayout = this.visualizer.nodes.map((node) => ({
+        ...node,
+      }));
+
+      // 8. 恢复到旋转前状态显示（包含新节点）
+      this.treeService.importFromJson(beforeRotationState);
+      this.visualizer.refreshLayout();
+
+      // 9. 创建动画数据
+      const animationData = this.createAnimationData(
+        beforeRotationLayout,
+        afterRotationLayout,
+        rotationOps[0]
+      );
+
+      if (animationData) {
+        // 10. 播放动画，动画完成后更新到最终状态
+        this.playRotationAnimationWithFinalUpdate(
+          animationData,
+          afterRotationLayout,
+          finalTreeState
+        );
+      } else {
+        console.log('❌ 无法创建动画数据');
+        // 如果无法创建动画，直接更新到最终状态
+        this.treeService.importFromJson(finalTreeState);
+        this.visualizer.refreshLayout();
+      }
+    } else {
+      // 没有旋转操作，直接更新显示
+      this.visualizer.refreshLayout();
+    }
+  }
+
+  private createBeforeRotationState(
+    beforeInsertRoot: string,
+    newValue: number
+  ): string {
+    // 解析原始树状态
+    const originalTree = JSON.parse(beforeInsertRoot);
+
+    // 创建一个简单的BST插入（不进行AVL平衡）
+    const insertNodeSimple = (node: any, value: number): any => {
+      if (!node) {
+        return {
+          value: value,
+          left: null,
+          right: null,
+          height: 1,
+        };
+      }
+
+      if (value < node.value) {
+        node.left = insertNodeSimple(node.left, value);
+      } else if (value > node.value) {
+        node.right = insertNodeSimple(node.right, value);
+      }
+
+      return node;
+    };
+
+    // 在原始树中插入新节点（不平衡）
+    const beforeRotationTree = originalTree
+      ? insertNodeSimple(JSON.parse(JSON.stringify(originalTree)), newValue)
+      : {
+          value: newValue,
+          left: null,
+          right: null,
+          height: 1,
+        };
+
+    console.log('🌳 创建旋转前状态（包含新节点）:', beforeRotationTree);
+
+    return JSON.stringify(beforeRotationTree);
+  }
+
+  private createAnimationData(
+    beforeLayout: any[],
+    afterLayout: any[],
+    rotationOp: any
+  ): any {
+    const paths: any[] = [];
+
+    beforeLayout.forEach((beforeNode) => {
+      const afterNode = afterLayout.find((n) => n.value === beforeNode.value);
+      if (
+        afterNode &&
+        (beforeNode.x !== afterNode.x || beforeNode.y !== afterNode.y)
+      ) {
+        paths.push({
+          nodeValue: beforeNode.value,
+          fromX: beforeNode.x,
+          fromY: beforeNode.y,
+          toX: afterNode.x,
+          toY: afterNode.y,
+          pathD: this.createBezierPath(beforeNode, afterNode),
+          progress: 0,
+          duration: 1500,
+        });
+
+        console.log(`📍 节点 ${beforeNode.value} 动画路径:`, {
+          from: `(${beforeNode.x}, ${beforeNode.y})`,
+          to: `(${afterNode.x}, ${afterNode.y})`,
+        });
+      }
+    });
+
+    if (paths.length === 0) {
+      return null;
+    }
+
+    return {
+      type: rotationOp.type,
+      centerNode: rotationOp.nodes[0],
+      paths,
+      isPlaying: false,
+      startTime: 0,
+    };
+  }
+
+  private createBezierPath(from: any, to: any): string {
+    const fromCenterX = from.x + 25;
+    const fromCenterY = from.y + 25;
+    const toCenterX = to.x + 25;
+    const toCenterY = to.y + 25;
+
+    const cp1x = fromCenterX + (toCenterX - fromCenterX) * 0.3;
+    const cp1y = fromCenterY - 50;
+    const cp2x = toCenterX - (toCenterX - fromCenterX) * 0.3;
+    const cp2y = toCenterY - 50;
+
+    return `M ${fromCenterX} ${fromCenterY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${toCenterX} ${toCenterY}`;
+  }
+
+  private playRotationAnimationWithFinalUpdate(
+    animationData: any,
+    finalLayout: any[],
+    finalTreeState: string
+  ): void {
+    console.log('🚀 开始播放旋转动画');
+
+    // 高亮参与动画的节点
+    this.visualizer.highlightedValues.clear();
+    animationData.paths.forEach((path: any) => {
+      this.visualizer.highlightedValues.add(path.nodeValue);
+    });
+
+    // 显示贝塞尔路径
+    this.visualizer.beziers = animationData.paths.map((path: any) => ({
+      d: path.pathD,
+    }));
+
+    const startTime = Date.now();
+    const duration = 1200;
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = this.easeInOutCubic(progress);
+
+      // 平滑更新节点位置
+      animationData.paths.forEach((path: any) => {
+        const node = this.visualizer.nodes.find(
+          (n) => n.value === path.nodeValue
+        );
+        if (node) {
+          node.x = path.fromX + (path.toX - path.fromX) * easedProgress;
+          node.y = path.fromY + (path.toY - path.fromY) * easedProgress;
+        }
+      });
+
+      // 平滑更新连线
+      this.updateLinesSmooth();
+
+      if (progress >= 1) {
+        // 动画完成 - 更新树结构并完成动画
+        this.finishAnimationWithTreeUpdate(finalLayout, finalTreeState);
+      } else {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    animate();
+  }
+
+  private updateLinesSmooth(): void {
+    // 获取当前树结构
+    const root = this.treeService.getRoot();
+    if (!root) return;
+
+    // 清空现有连线
+    this.visualizer.lines.length = 0;
+
+    // 重新构建连线，但使用当前动画中的节点位置
+    this.buildLinesFromCurrentNodes(root, null);
+  }
+
+  private buildLinesFromCurrentNodes(node: any, parent: any): void {
+    if (!node) return;
+
+    if (parent) {
+      const parentPos = this.visualizer.nodes.find(
+        (n) => n.value === parent.value
+      );
+      const nodePos = this.visualizer.nodes.find((n) => n.value === node.value);
+
+      if (parentPos && nodePos) {
+        this.visualizer.lines.push({
+          x1: parentPos.x + 25, // nodeSize / 2
+          y1: parentPos.y + 25,
+          x2: nodePos.x + 25,
+          y2: nodePos.y + 25,
+        });
+      }
+    }
+
+    this.buildLinesFromCurrentNodes(node.left, node);
+    this.buildLinesFromCurrentNodes(node.right, node);
+  }
+
+  private finishAnimationWithTreeUpdate(
+    finalLayout: any[],
+    finalTreeState: string
+  ): void {
+    console.log('✅ 旋转动画完成，更新树结构');
+
+    // 1. 更新树结构到最终状态
+    this.treeService.importFromJson(finalTreeState);
+
+    // 2. 平滑更新到最终位置
+    finalLayout.forEach((finalNode) => {
+      const currentNode = this.visualizer.nodes.find(
+        (n) => n.value === finalNode.value
+      );
+      if (currentNode) {
+        currentNode.x = finalNode.x;
+        currentNode.y = finalNode.y;
+      }
+    });
+
+    // 3. 最终更新连线
+    this.updateLinesSmooth();
+
+    // 4. 清理动画状态
+    this.visualizer.beziers = [];
+
+    // 5. 延迟清除高亮
+    setTimeout(() => {
+      this.visualizer.highlightedValues.clear();
+    }, 500);
+  }
+
+  private easeInOutCubic(t: number): number {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
 
   onPlay(): void {
@@ -132,6 +414,26 @@ export class TreeComponent {
 
   onStep(): void {
     this.visualizer.step();
+  }
+
+  onTestRotation(): void {
+    console.log('🧪 开始旋转测试');
+
+    // 清空现有树
+    this.treeService.clearTree();
+    this.visualizer.clearLayout();
+
+    // 先插入两个节点建立基础结构
+    console.log('建立基础结构: 插入 10, 5');
+    this.treeService.insert(10);
+    this.treeService.insert(5);
+    this.visualizer.refreshLayout();
+
+    // 等待一秒后插入会触发旋转的节点
+    setTimeout(() => {
+      console.log('插入触发旋转的节点: 1');
+      this.onInsert(1); // 使用新的插入方法
+    }, 1000);
   }
 
   onExport(): void {
