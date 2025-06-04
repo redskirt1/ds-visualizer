@@ -1,2 +1,88 @@
 <!-- app.component.html -->
-<router-outlet></router-outlet>
+<div class="app-layout" [class.sidebar-open]="sidebarOpen">
+  <!-- 顶部导航栏 -->
+  <header class="top-navbar" *ngIf="showNavigation">
+    <div class="navbar-content">
+      <div class="navbar-left">
+        <button
+          class="sidebar-toggle"
+          (click)="toggleSidebar()"
+          title="切换侧边栏"
+        >
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="brand">
+          <i class="fas fa-chart-network"></i>
+          <span class="brand-text">数据结构可视化</span>
+        </div>
+      </div>
+
+      <div class="navbar-right">
+        <div class="user-menu">
+          <button
+            class="user-avatar"
+            (click)="toggleUserMenu()"
+            title="用户菜单"
+          >
+            <i class="fas fa-user"></i>
+          </button>
+          <div class="user-dropdown" [class.show]="userMenuOpen">
+            <a href="#" class="dropdown-item">
+              <i class="fas fa-user"></i>
+              个人资料
+            </a>
+            <a href="#" class="dropdown-item">
+              <i class="fas fa-cog"></i>
+              设置
+            </a>
+            <hr class="dropdown-divider" />
+            <a href="#" class="dropdown-item" (click)="logout()">
+              <i class="fas fa-sign-out-alt"></i>
+              退出登录
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 侧边栏 -->
+  <aside class="sidebar" *ngIf="showNavigation">
+    <nav class="sidebar-nav">
+      <a
+        routerLink="/home"
+        routerLinkActive="active"
+        class="nav-item"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <i class="fas fa-home"></i>
+        <span>首页</span>
+      </a>
+
+      <a routerLink="/linear" routerLinkActive="active" class="nav-item">
+        <i class="fas fa-list"></i>
+        <span>线性结构</span>
+      </a>
+
+      <a routerLink="/tree" routerLinkActive="active" class="nav-item">
+        <i class="fas fa-sitemap"></i>
+        <span>树结构</span>
+      </a>
+
+      <a routerLink="/graph" routerLinkActive="active" class="nav-item">
+        <i class="fas fa-project-diagram"></i>
+        <span>图结构</span>
+      </a>
+
+      <a routerLink="/advanced" routerLinkActive="active" class="nav-item">
+        <i class="fas fa-brain"></i>
+        <span>进阶算法</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- 主内容区域 -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>
