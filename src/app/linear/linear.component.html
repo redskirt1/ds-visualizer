@@ -1,1 +1,124 @@
-<p>linear works!</p>
+<div class="linear-container">
+    <!-- 左侧控制栏 -->
+    <div class="controls">
+        <!-- 数组生成区 -->
+        <div class="control-group">
+            <h3>数组生成</h3>
+            <div class="control-item">
+                <label>数组长度:</label>
+                <input type="number" [(ngModel)]="arrayLength" min="1" max="15">
+            </div>
+            <div class="control-item">
+                <button (click)="generateRandomArray()">生成随机数组</button>
+                <button (click)="exportArray()">导出JSON</button>
+            </div>
+        </div>
+
+        <!-- 算法选择与控制区 -->
+        <div class="control-group">
+            <h3>排序算法</h3>
+            <div class="control-item">
+                <button (click)="runBubbleSort()">冒泡排序</button>
+                <button (click)="runQuickSort()">快速排序</button> <!-- 这里新增 -->
+                <button (click)="runMergeSort()">归并排序</button>
+
+                <!-- 后续可以加 快速排序、归并排序 -->
+            </div>
+            <div class="control-item">
+                <button (click)="isPlaying ? stopAnimation() : playAnimation()">
+                    {{ isPlaying ? '暂停' : '播放' }}
+                </button>
+                <button (click)="prevStep()" [disabled]="currentStep === 0">上一步</button>
+                <button (click)="nextStep()" [disabled]="currentStep === sortingSteps.length - 1">下一步</button>
+            </div>
+            <div class="control-item">
+                <label>播放速度:</label>
+                <select [(ngModel)]="animationSpeed" (change)="changeSpeed(animationSpeed)">
+                    <option *ngFor="let speed of speedOptions" [value]="speed">
+                        {{ speed / 1000 }}秒
+                    </option>
+                </select>
+            </div>
+            <div class="control-item">
+                <div>当前比较: {{ sortingSteps[currentStep]?.description || '无' }}</div>
+            </div>
+            <div class="control-item">
+                <div>步数: {{ currentStep + 1 }} / {{ sortingSteps.length }}</div>
+            </div>
+            <div class="control-item">
+                <div>比较次数: {{ sortingSteps[currentStep]?.comparisons || 0 }}</div>
+            </div>
+            <div class="control-item">
+                <div>交换次数: {{ sortingSteps[currentStep]?.swaps || 0 }}</div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 右侧数组可视化 -->
+    <div class="array-visualization">
+        <div class="algorithm-description" [innerHTML]="currentAlgorithmDescription"></div>
+
+        <div class="array-elements">
+            <div *ngFor="let el of array" class="array-element" [style.background-color]="el.color">
+                {{ el.value }}
+            </div>
+        </div>
+    </div>
+
+
+</div>
+<!-- 栈和队列功能区 -->
+<div class="data-structure-area">
+    <!-- Stack 栈 -->
+    <div class="structure-block">
+        <h3>栈（Stack）</h3>
+        <p>后进先出（LIFO）：最后进入的元素最先移除。</p>
+        <div class="labels">
+            <span>栈底</span>
+            <span>栈顶</span>
+        </div>
+
+        <div class="controls">
+            <input type="number" [(ngModel)]="stackInput" placeholder="输入元素">
+            <button class="btn" (click)="pushStack()">入栈</button>
+            <button class="btn" (click)="popStack()">出栈</button>
+            <button class="btn" (click)="exportStack()">导出JSON</button>
+            <input type="file" (change)="importStack($event)">
+        </div>
+
+        <div class="operation-tip">{{ stackOperation }}</div>
+
+        <div class="structure-elements">
+            <div *ngFor="let el of stack" class="structure-element">
+                {{ el }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Queue 队列 -->
+    <div class="structure-block">
+        <h3>队列（Queue）</h3>
+        <p>先进先出（FIFO）：最先进入的元素最先移除。</p>
+        <div class="labels">
+            <span>队头</span>
+            <span>队尾</span>
+        </div>
+
+        <div class="controls">
+            <input type="number" [(ngModel)]="queueInput" placeholder="输入元素">
+            <button class="btn" (click)="enqueueQueue()">入队</button>
+            <button class="btn" (click)="dequeueQueue()">出队</button>
+            <button class="btn" (click)="exportQueue()">导出JSON</button>
+            <input type="file" (change)="importQueue($event)">
+        </div>
+
+        <div class="operation-tip">{{ queueOperation }}</div>
+
+        <div class="structure-elements">
+            <div *ngFor="let el of queue" class="structure-element">
+                {{ el }}
+            </div>
+        </div>
+    </div>
+</div>
