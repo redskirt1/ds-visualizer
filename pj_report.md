@@ -42,7 +42,6 @@ graph TD
         C4 --> C41[CORS过滤器]
         C4 --> C42[统一返回结果]
 
-        C --> C5[JWT认证]
         C --> C6[MyBatis]
         C6 -->|数据持久化| D
     end
