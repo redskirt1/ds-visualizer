@@ -18,10 +18,9 @@
 
 ### 2.2 技术选型
 
-* 前端：
-* 后端：
-* 部署：
-* 特色技术：
+* 前端：Angular
+* 后端：Spring Boot
+* 部署：Docker Compose
 
 ### 2.3 模块划分
 
@@ -40,8 +39,9 @@
 在tree模块中实现，支持左旋右旋，数据组成单元是treenode，树指标输出在metric-display，树结构可视化在tree-visualizer
 ![alt text](pictures/311avl.png)
 
-- 图（邻接表/矩阵）
-
+- 图（Dijkstra/Prim/Kruskal算法）
+在Graph模块中实现，可对已遍历路径进行染色，以及显示对应权重。
+![图算法展示](pictures/graph.png)
 - 哈希表（链地址法）
 
 #### 3.1.2 支持交互建模
@@ -68,7 +68,10 @@
 
 >（3）图算法：Dijkstra/Prim/Kruskal（动态显示权值更新）
 
->（4）支持随机生成输入数值或者手动通过画布点击创建图节点绘制
+![Kruskal](pictures/graph_Kruskal.png)
+>（4）支持随机生成图节点
+
+![随机生成图](pictures/graph_generate.png)
 
 ### 3.2 交互式仿真控制（20分） 
 
@@ -83,9 +86,10 @@
 - 在树结构中实现了单步执行、0.5x-4x播放速度、暂停、展示指标（见3.1.3）
 ![alt text](pictures/32tree.png)
 
-- 
+- 在图算法展示中实现了单步执行时高亮、调整播放速度、暂停、展示指标功能
+![alt text](pictures/graph_show.png)
 
-- 
+
 
 
 ### 3.3 学习引导系统（30分） 
@@ -105,6 +109,8 @@
 > 比如快速排序：分区过程颜色标记（红=基准值，蓝=已处理）
 
 > Dijkstra算法：最短路径渐进式染色（从起点向外扩散）
+
+![图算法展示](pictures/graph.png)
 
 #### 3.3.2 评估体系（15分） 
 • 提供标准测试集（5个左右场景）： 
@@ -166,27 +172,28 @@ B+树的 3D 可视化采用层次化布局策略，将树的不同层级映射�
 
 ## 4. 部署与使用说明
 
-### 4.1 安装步骤
+### 4.1 打包步骤
 
 * 前端：
 
   ```bash
-  
+  ng build
   ```
 * 后端：
 
   ```bash
-  
+  mvn clean package
   ```
-* 数据库初始化：
-
-  * 
+  
 
 ### 4.2 云部署说明
 
-* 
-* 
-* 
+* 将docker/frontend文件夹内的dist替换为构建好的dist
+* 将docker/backend/target文件夹内的jar包替换为构建好的jar包
+* 运行下方指令即可部署
+```bash
+docker compose -f 'docker-compose.yml' up -d --build 
+```
 
 ---
 

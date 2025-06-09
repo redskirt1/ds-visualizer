@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';  // 添加这行
 
 @Component({
   selector: 'app-register',
@@ -19,22 +20,22 @@ export class RegisterComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private http: HttpClient  // 添加 HTTP 客户端
   ) {
     this.registerForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
-    }, { validators: this.passwordMatchValidator });
+    }, { validators: this.passwordMatchValidator.bind(this) });  // 添加 bind(this)
   }
 
   ngOnInit(): void {
     // 初始化逻辑
   }
 
-  // 自定义验证器：确认两次密码输入一致
-  passwordMatchValidator(form: FormGroup) {
+  // 两次密码一致
+  passwordMatchValidator = (form: FormGroup) => {
     const password = form.get('password')?.value;
     const confirmPassword = form.get('confirmPassword')?.value;
     
@@ -55,19 +56,26 @@ export class RegisterComponent implements OnInit {
     this.errorMessage = null;
     this.successMessage = null;
 
-    // 模拟注册请求
-    setTimeout(() => {
-      // 这里应该是实际的API调用
-      const { username, email, password } = this.registerForm.value;
-      
-      // 模拟注册成功
+    // 发送注册请求
+    this.http.post('/register', this.registerForm.value)
+      .subscribe({
+        next: (response: any) => {
+          if (response.status === 200) {
       this.successMessage = '注册成功！即将跳转到登录页面...';
-      
       setTimeout(() => {
         this.router.navigate(['/login']);
       }, 2000);
-      
-      this.isSubmitting = false;
-    }, 1000);
+          } else {
+            this.errorMessage = response.message || '注册失败';
+  }
+        },
+        error: (error) => {
+          this.errorMessage = error.error?.message || '注册失败：服务器错误';
+          this.isSubmitting = false;
+        },
+        complete: () => {
+          this.isSubmitting = false;
+}
+      });
   }
 }
